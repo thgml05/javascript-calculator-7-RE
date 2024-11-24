@@ -16,29 +16,43 @@ const getLogSpy = () => {
   return logSpy;
 };
 
-const runTest = async (inputs, outputs) => {
-  mockQuestions(inputs);
-
-  const logSpy = getLogSpy();
-
-  const app = new App();
-  await app.run();
-
-  expect(logSpy).toHaveBeenCalledWith(outputs);
-};
-
 describe('문자열 계산기', () => {
   describe('기본 구분자 사용', () => {
-    test('쉼표(,) 구분자 테스트', async () => {
-      runTest(['1,2,3'], '결과 : 6');
-    });
+    test.each([
+      [['1,2,3'], '결과 : 6'],
+      [['1:2:3'], '결과 : 6'],
+      [['1,2:3'], '결과 : 6'],
+    ])(
+      '입력값 %s에 대해 계산된 결과는 %s 이어야 함',
+      async (inputs, outputs) => {
+        mockQuestions(inputs);
 
-    test('세미콜론(:) 구분자 테스트', async () => {
-      runTest(['1:2:3'], '결과 : 6');
-    });
+        const logSpy = getLogSpy();
 
-    test('쉼표(,) & 세미콜론(:) 구분자 테스트', async () => {
-      runTest(['1,2:3'], '결과 : 6');
-    });
+        const app = new App();
+        await app.run();
+
+        expect(logSpy).toHaveBeenCalledWith(outputs);
+      }
+    );
+  });
+
+  describe('커스텀 구분자 사용', () => {
+    test.each([
+      [['//;\\n1;3;5'], '결과 : 9'],
+      [['//;*\\n1;*3;*5'], '결과 : 9'],
+    ])(
+      '입력값 %s에 대해 계산된 결과는 %s 이어야 함',
+      async (inputs, outputs) => {
+        mockQuestions(inputs);
+
+        const logSpy = getLogSpy();
+
+        const app = new App();
+        await app.run();
+
+        expect(logSpy).toHaveBeenCalledWith(outputs);
+      }
+    );
   });
 });
